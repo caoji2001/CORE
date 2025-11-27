@@ -1,0 +1,15 @@
+torch==2.7.1
+torch-geometric==2.6.1
+openai
+sentence_transformers
+numpy
+pandas
+scikit-learn
+shapely
+networkx
+pyproj
+loguru
+scipy
+tensorboard
+timm
+tenacity
