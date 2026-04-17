@@ -84,5 +84,5 @@ if __name__ == '__main__':
                     'user_prompt': user_prompt
                 }
 
-    with open(f'../llm_cache/{dataset}/grid_poi_prompt_{grid_size}_top{int(top_ratio*100)}_new.pkl', 'wb') as file:
+    with open(f'../llm_cache/{dataset}/grid_poi_prompt_{grid_size}_top{int(top_ratio*100)}.pkl', 'wb') as file:
         pickle.dump(llm_prompt, file)

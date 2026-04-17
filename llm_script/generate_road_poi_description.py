@@ -79,5 +79,5 @@ if __name__ == '__main__':
     for content in road_poi_results:
         road_poi_output_list.append(content)
 
-    with open(f'../llm_cache/{args.dataset}/road_poi_description_{args.max_dis}_new.pkl', 'wb') as file:
+    with open(f'../llm_cache/{args.dataset}/road_poi_description_{args.max_dis}.pkl', 'wb') as file:
         pickle.dump(road_poi_output_list, file)

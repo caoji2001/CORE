@@ -316,21 +316,34 @@ if __name__ == '__main__':
 
     detoured_traj['path'] = detoured_traj['path'].apply(eval)
     detoured_traj['timestamp'] = detoured_traj['timestamp'].apply(eval)
-    detoured_traj['timestamp'] = detoured_traj['timestamp'].apply(
-        lambda lst: [datetime.fromtimestamp(t, ZoneInfo('Asia/Shanghai')) for t in lst]
-    )
 
     not_detoured_traj['path'] = not_detoured_traj['path'].apply(eval)
     not_detoured_traj['timestamp'] = not_detoured_traj['timestamp'].apply(eval)
-    not_detoured_traj['timestamp'] = not_detoured_traj['timestamp'].apply(
-        lambda lst: [datetime.fromtimestamp(t, ZoneInfo('Asia/Shanghai')) for t in lst]
-    )
 
     other_traj['path'] = other_traj['path'].apply(eval)
     other_traj['timestamp'] = other_traj['timestamp'].apply(eval)
-    other_traj['timestamp'] = other_traj['timestamp'].apply(
-        lambda lst: [datetime.fromtimestamp(t, ZoneInfo('Asia/Shanghai')) for t in lst]
-    )
+
+    assert args.dataset in ['Beijing', 'Chengdu', 'Xian', 'Porto']
+    if args.dataset in ['Beijing', 'Chengdu', 'Xian']:
+        detoured_traj['timestamp'] = detoured_traj['timestamp'].apply(
+            lambda lst: [datetime.fromtimestamp(t, ZoneInfo('Asia/Shanghai')) for t in lst]
+        )
+        not_detoured_traj['timestamp'] = not_detoured_traj['timestamp'].apply(
+            lambda lst: [datetime.fromtimestamp(t, ZoneInfo('Asia/Shanghai')) for t in lst]
+        )
+        other_traj['timestamp'] = other_traj['timestamp'].apply(
+            lambda lst: [datetime.fromtimestamp(t, ZoneInfo('Asia/Shanghai')) for t in lst]
+        )
+    else:
+        detoured_traj['timestamp'] = detoured_traj['timestamp'].apply(
+            lambda lst: [datetime.fromtimestamp(t, ZoneInfo('Europe/Lisbon')) for t in lst]
+        )
+        not_detoured_traj['timestamp'] = not_detoured_traj['timestamp'].apply(
+            lambda lst: [datetime.fromtimestamp(t, ZoneInfo('Europe/Lisbon')) for t in lst]
+        )
+        other_traj['timestamp'] = other_traj['timestamp'].apply(
+            lambda lst: [datetime.fromtimestamp(t, ZoneInfo('Europe/Lisbon')) for t in lst]
+        )
 
     geo_dict = {
         road_id: {

@@ -17,7 +17,7 @@ if __name__ == '__main__':
         llm_description = pickle.load(file)
 
     model = SentenceTransformer('Qwen/Qwen3-Embedding-8B', cache_folder='../llm_cache/sbert', device=device)
-    sentences = [llm_description[i]['content'] for i in range(len(llm_description))]
+    sentences = [llm_description[i] for i in range(len(llm_description))]
 
     embeddings = model.encode(sentences, batch_size=1, show_progress_bar=True)
     embeddings = torch.from_numpy(embeddings)

@@ -83,5 +83,5 @@ if __name__ == '__main__':
     for content, grid_id, poi_cat in grid_poi_results:
         llm_output[grid_id][poi_cat] = content
 
-    with open(f'../llm_cache/{args.dataset}/grid_poi_description_{args.grid_size}_top{int(args.top_ratio*100)}_new.pkl', 'wb') as file:
+    with open(f'../llm_cache/{args.dataset}/grid_poi_description_{args.grid_size}_top{int(args.top_ratio*100)}.pkl', 'wb') as file:
         pickle.dump(llm_output, file)

@@ -114,5 +114,5 @@ if __name__ == '__main__':
             'user_prompt': user_prompt
         })
 
-    with open(f'../llm_cache/{dataset}/road_poi_prompt_{max_dis}_new.pkl', 'wb') as file:
+    with open(f'../llm_cache/{dataset}/road_poi_prompt_{max_dis}.pkl', 'wb') as file:
         pickle.dump(road_poi_prompt_list, file)

@@ -428,15 +428,25 @@ if __name__ == '__main__':
 
     traj_cl_1['path'] = traj_cl_1['path'].apply(eval)
     traj_cl_1['timestamp'] = traj_cl_1['timestamp'].apply(eval)
-    traj_cl_1['timestamp'] = traj_cl_1['timestamp'].apply(
-        lambda lst: [datetime.fromtimestamp(t, ZoneInfo('Asia/Shanghai')) for t in lst]
-    )
 
     traj_cl_2['path'] = traj_cl_2['path'].apply(eval)
     traj_cl_2['timestamp'] = traj_cl_2['timestamp'].apply(eval)
-    traj_cl_2['timestamp'] = traj_cl_2['timestamp'].apply(
-        lambda lst: [datetime.fromtimestamp(t, ZoneInfo('Asia/Shanghai')) for t in lst]
-    )
+
+    assert args.dataset in ['Beijing', 'Chengdu', 'Xian', 'Porto']
+    if args.dataset in ['Beijing', 'Chengdu', 'Xian']:
+        traj_cl_1['timestamp'] = traj_cl_1['timestamp'].apply(
+            lambda lst: [datetime.fromtimestamp(t, ZoneInfo('Asia/Shanghai')) for t in lst]
+        )
+        traj_cl_2['timestamp'] = traj_cl_2['timestamp'].apply(
+            lambda lst: [datetime.fromtimestamp(t, ZoneInfo('Asia/Shanghai')) for t in lst]
+        )
+    else:
+        traj_cl_1['timestamp'] = traj_cl_1['timestamp'].apply(
+            lambda lst: [datetime.fromtimestamp(t, ZoneInfo('Europe/Lisbon')) for t in lst]
+        )
+        traj_cl_2['timestamp'] = traj_cl_2['timestamp'].apply(
+            lambda lst: [datetime.fromtimestamp(t, ZoneInfo('Europe/Lisbon')) for t in lst]
+        )
 
     geo_dict = {
         road_id: {

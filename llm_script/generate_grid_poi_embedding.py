@@ -23,7 +23,7 @@ if __name__ == '__main__':
             grid_id_and_poi_cat.append((grid_id, poi_cat))
 
     model = SentenceTransformer('Qwen/Qwen3-Embedding-8B', cache_folder='../llm_cache/sbert', device=device)
-    sentences = [llm_description[grid_id][poi_cat]['content'] for grid_id, poi_cat in grid_id_and_poi_cat]
+    sentences = [llm_description[grid_id][poi_cat] for grid_id, poi_cat in grid_id_and_poi_cat]
 
     embeddings = model.encode(sentences, batch_size=1, show_progress_bar=True)
     embeddings = torch.from_numpy(embeddings)

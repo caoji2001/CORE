@@ -282,11 +282,11 @@ class Core(nn.Module):
 
         self.fine_poi_gate = nn.Sequential(
             nn.Linear(config.embed_dim*2, config.embed_dim),
-            nn.SiLU()
+            nn.Tanh()
         )
         self.coarse_poi_gate = nn.Sequential(
             nn.Linear(config.embed_dim*2, config.embed_dim),
-            nn.SiLU()
+            nn.Tanh()
         )
 
         self.road_feat_after_fusion_ln = nn.LayerNorm(config.embed_dim)

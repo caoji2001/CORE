@@ -333,27 +333,40 @@ if __name__ == '__main__':
     train_traj['label'] = train_traj['path'].apply(lambda x: x[-1])
     train_traj['path'] = train_traj['path'].apply(lambda x: x[:len(x)//2])
     train_traj['timestamp'] = train_traj['timestamp'].apply(lambda x: x[:len(x)//2])
-    train_traj['timestamp'] = train_traj['timestamp'].apply(
-        lambda lst: [datetime.fromtimestamp(t, ZoneInfo('Asia/Shanghai')) for t in lst]
-    )
 
     val_traj['path'] = val_traj['path'].apply(eval)
     val_traj['timestamp'] = val_traj['timestamp'].apply(eval)
     val_traj['label'] = val_traj['path'].apply(lambda x: x[-1])
     val_traj['path'] = val_traj['path'].apply(lambda x: x[:len(x)//2])
     val_traj['timestamp'] = val_traj['timestamp'].apply(lambda x: x[:len(x)//2])
-    val_traj['timestamp'] = val_traj['timestamp'].apply(
-        lambda lst: [datetime.fromtimestamp(t, ZoneInfo('Asia/Shanghai')) for t in lst]
-    )
 
     test_traj['path'] = test_traj['path'].apply(eval)
     test_traj['timestamp'] = test_traj['timestamp'].apply(eval)
     test_traj['label'] = test_traj['path'].apply(lambda x: x[-1])
     test_traj['path'] = test_traj['path'].apply(lambda x: x[:len(x)//2])
     test_traj['timestamp'] = test_traj['timestamp'].apply(lambda x: x[:len(x)//2])
-    test_traj['timestamp'] = test_traj['timestamp'].apply(
-        lambda lst: [datetime.fromtimestamp(t, ZoneInfo('Asia/Shanghai')) for t in lst]
-    )
+
+    assert args.dataset in ['Beijing', 'Chengdu', 'Xian', 'Porto']
+    if args.dataset in ['Beijing', 'Chengdu', 'Xian']:
+        train_traj['timestamp'] = train_traj['timestamp'].apply(
+            lambda lst: [datetime.fromtimestamp(t, ZoneInfo('Asia/Shanghai')) for t in lst]
+        )
+        val_traj['timestamp'] = val_traj['timestamp'].apply(
+            lambda lst: [datetime.fromtimestamp(t, ZoneInfo('Asia/Shanghai')) for t in lst]
+        )
+        test_traj['timestamp'] = test_traj['timestamp'].apply(
+            lambda lst: [datetime.fromtimestamp(t, ZoneInfo('Asia/Shanghai')) for t in lst]
+        )
+    else:
+        train_traj['timestamp'] = train_traj['timestamp'].apply(
+            lambda lst: [datetime.fromtimestamp(t, ZoneInfo('Europe/Lisbon')) for t in lst]
+        )
+        val_traj['timestamp'] = val_traj['timestamp'].apply(
+            lambda lst: [datetime.fromtimestamp(t, ZoneInfo('Europe/Lisbon')) for t in lst]
+        )
+        test_traj['timestamp'] = test_traj['timestamp'].apply(
+            lambda lst: [datetime.fromtimestamp(t, ZoneInfo('Europe/Lisbon')) for t in lst]
+        )
 
     geo_dict = {
         road_id: {

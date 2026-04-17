@@ -30,7 +30,7 @@ def process_item(geo_coord):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--dataset', type=str, default='Beijing', choices=['Beijing', 'Chengdu', 'Xian', 'Porto'])
-    parser.add_argument('--max_dis', type=int, default=50)
+    parser.add_argument('--max_dis', type=int, default=100)
     parser.add_argument('--processes', type=int, default=mp.cpu_count())
     args = parser.parse_args()
 
