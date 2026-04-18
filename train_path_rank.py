@@ -8,7 +8,6 @@ from shapely import LineString
 import pandas as pd
 import numpy as np
 import scipy.sparse as sp
-from scipy.spatial.distance import cdist
 import pyproj
 from scipy.stats import kendalltau, spearmanr
 import torch
@@ -92,7 +91,7 @@ def process_row(args):
 
             if next_road_id == -1:
                 route_choice_selected_mask_data_tmp.append(False)
-                route_choice_unselected_mask_data_tmp.append(False)
+                route_choice_unselected_mask_data_tmp.append(True)
             else:
                 route_choice_selected_mask_data_tmp.append(adj_road_id == next_road_id)
                 route_choice_unselected_mask_data_tmp.append(adj_road_id != next_road_id)
