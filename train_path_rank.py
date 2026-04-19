@@ -208,75 +208,106 @@ class TrajDataset(Dataset):
 
 
 class MyCollateFn:
-    def __init__(self, road_id_padding_idx, grid_id_padding_idx, weekday_padding_idx, time_of_day_padding_idx):
+    def __init__(self, road_id_padding_idx, grid_id_padding_idx,
+                 weekday_padding_idx, time_of_day_padding_idx):
         self.road_id_padding_idx = road_id_padding_idx
         self.grid_id_padding_idx = grid_id_padding_idx
         self.weekday_padding_idx = weekday_padding_idx
         self.time_of_day_padding_idx = time_of_day_padding_idx
 
     def __call__(self, items):
+        batch_size = len(items)
+        traj_lens = torch.tensor([int(item["traj_len"]) for item in items], dtype=torch.int64)
+
+        max_traj_len = int(traj_lens.max().item())
+        max_adj_road_num = max(item["adj_road_id"].shape[1] for item in items)
+
         batch = {
-            'traj_road_id': [],
-            'traj_grid_id': [],
-            'adj_road_id': [],
-            'adj_grid_id': [],
-            'route_choice_travel_progress': [],
-            'route_choice_angle': [],
-            'route_choice_trans_prob': [],
-            'route_choice_selected_mask': [],
-            'route_choice_unselected_mask': [],
-            'weekday': [],
-            'time_of_day': [],
-            'traj_len': [],
-            'label': []
+            "traj_road_id": torch.full(
+                (batch_size, max_traj_len),
+                fill_value=self.road_id_padding_idx,
+                dtype=torch.int64,
+            ),
+            "traj_grid_id": torch.full(
+                (batch_size, max_traj_len),
+                fill_value=self.grid_id_padding_idx,
+                dtype=torch.int64,
+            ),
+            "adj_road_id": torch.full(
+                (batch_size, max_traj_len, max_adj_road_num),
+                fill_value=self.road_id_padding_idx,
+                dtype=torch.int64,
+            ),
+            "adj_grid_id": torch.full(
+                (batch_size, max_traj_len, max_adj_road_num),
+                fill_value=self.grid_id_padding_idx,
+                dtype=torch.int64,
+            ),
+            "route_choice_travel_progress": torch.zeros(
+                (batch_size, max_traj_len),
+                dtype=torch.float32,
+            ),
+            "route_choice_angle": torch.zeros(
+                (batch_size, max_traj_len, max_adj_road_num),
+                dtype=torch.float32,
+            ),
+            "route_choice_trans_prob": torch.zeros(
+                (batch_size, max_traj_len, max_adj_road_num),
+                dtype=torch.float32,
+            ),
+            "route_choice_selected_mask": torch.zeros(
+                (batch_size, max_traj_len, max_adj_road_num),
+                dtype=torch.bool,
+            ),
+            "route_choice_unselected_mask": torch.zeros(
+                (batch_size, max_traj_len, max_adj_road_num),
+                dtype=torch.bool,
+            ),
+            "weekday": torch.full(
+                (batch_size, max_traj_len),
+                fill_value=self.weekday_padding_idx,
+                dtype=torch.int64,
+            ),
+            "time_of_day": torch.full(
+                (batch_size, max_traj_len),
+                fill_value=self.time_of_day_padding_idx,
+                dtype=torch.int64,
+            ),
+            "traj_len": traj_lens,
+            "label": torch.empty(batch_size, dtype=torch.float32),
         }
 
-        for item in items:
-            batch['traj_road_id'].append(item['traj_road_id'])
-            batch['traj_grid_id'].append(item['traj_grid_id'])
-            batch['adj_road_id'].append(item['adj_road_id'])
-            batch['adj_grid_id'].append(item['adj_grid_id'])
-            batch['route_choice_travel_progress'].append(item['route_choice_travel_progress'])
-            batch['route_choice_angle'].append(item['route_choice_angle'])
-            batch['route_choice_trans_prob'].append(item['route_choice_trans_prob'])
-            batch['route_choice_selected_mask'].append(item['route_choice_selected_mask'])
-            batch['route_choice_unselected_mask'].append(item['route_choice_unselected_mask'])
-            batch['weekday'].append(item['weekday'])
-            batch['time_of_day'].append(item['time_of_day'])
-            batch['traj_len'].append(item['traj_len'])
-            batch['label'].append(item['label'])
+        for i, item in enumerate(items):
+            L = int(item["traj_len"])
+            A = item["adj_road_id"].shape[1]
 
-        max_traj_len = max(batch['traj_len'])
-        max_adj_road_num = max([x.shape[1] for x in batch['adj_road_id']])
-        for i in range(len(batch['traj_road_id'])):
-            traj_pad_num = max_traj_len - batch['traj_len'][i]
-            adj_road_pad_num = max_adj_road_num - batch['adj_road_id'][i].shape[1]
+            batch["traj_road_id"][i, :L] = torch.as_tensor(item["traj_road_id"], dtype=torch.int64)
+            batch["traj_grid_id"][i, :L] = torch.as_tensor(item["traj_grid_id"], dtype=torch.int64)
 
-            batch['traj_road_id'][i] = np.pad(batch['traj_road_id'][i], (0, traj_pad_num), 'constant', constant_values=self.road_id_padding_idx)
-            batch['traj_grid_id'][i] = np.pad(batch['traj_grid_id'][i], (0, traj_pad_num), 'constant', constant_values=self.grid_id_padding_idx)
-            batch['adj_road_id'][i] = np.pad(batch['adj_road_id'][i], ((0, traj_pad_num), (0, adj_road_pad_num)), 'constant', constant_values=self.road_id_padding_idx)
-            batch['adj_grid_id'][i] = np.pad(batch['adj_grid_id'][i], ((0, traj_pad_num), (0, adj_road_pad_num)), 'constant', constant_values=self.grid_id_padding_idx)
-            batch['route_choice_travel_progress'][i] = np.pad(batch['route_choice_travel_progress'][i], (0, traj_pad_num), 'constant', constant_values=np.float32(0.0))
-            batch['route_choice_angle'][i] = np.pad(batch['route_choice_angle'][i], ((0, traj_pad_num), (0, adj_road_pad_num)), 'constant', constant_values=np.float32(0.0))
-            batch['route_choice_trans_prob'][i] = np.pad(batch['route_choice_trans_prob'][i], ((0, traj_pad_num), (0, adj_road_pad_num)), 'constant', constant_values=np.float32(0.0))
-            batch['route_choice_selected_mask'][i] = np.pad(batch['route_choice_selected_mask'][i], ((0, traj_pad_num), (0, adj_road_pad_num)), 'constant', constant_values=np.bool_(False))
-            batch['route_choice_unselected_mask'][i] = np.pad(batch['route_choice_unselected_mask'][i], ((0, traj_pad_num), (0, adj_road_pad_num)), 'constant', constant_values=np.bool_(False))
-            batch['weekday'][i] = np.pad(batch['weekday'][i], (0, traj_pad_num), 'constant', constant_values=self.weekday_padding_idx)
-            batch['time_of_day'][i] = np.pad(batch['time_of_day'][i], (0, traj_pad_num), 'constant', constant_values=self.time_of_day_padding_idx)
+            batch["adj_road_id"][i, :L, :A] = torch.as_tensor(item["adj_road_id"], dtype=torch.int64)
+            batch["adj_grid_id"][i, :L, :A] = torch.as_tensor(item["adj_grid_id"], dtype=torch.int64)
 
-        batch['traj_road_id'] = torch.from_numpy(np.stack(batch['traj_road_id'], axis=0))
-        batch['traj_grid_id'] = torch.from_numpy(np.stack(batch['traj_grid_id'], axis=0))
-        batch['adj_road_id'] = torch.from_numpy(np.stack(batch['adj_road_id'], axis=0))
-        batch['adj_grid_id'] = torch.from_numpy(np.stack(batch['adj_grid_id'], axis=0))
-        batch['route_choice_travel_progress'] = torch.from_numpy(np.stack(batch['route_choice_travel_progress'], axis=0))
-        batch['route_choice_angle'] = torch.from_numpy(np.stack(batch['route_choice_angle'], axis=0))
-        batch['route_choice_trans_prob'] = torch.from_numpy(np.stack(batch['route_choice_trans_prob'], axis=0))
-        batch['route_choice_selected_mask'] = torch.from_numpy(np.stack(batch['route_choice_selected_mask'], axis=0))
-        batch['route_choice_unselected_mask'] = torch.from_numpy(np.stack(batch['route_choice_unselected_mask'], axis=0))
-        batch['weekday'] = torch.from_numpy(np.stack(batch['weekday'], axis=0))
-        batch['time_of_day'] = torch.from_numpy(np.stack(batch['time_of_day'], axis=0))
-        batch['traj_len'] = torch.from_numpy(np.array(batch['traj_len']))
-        batch['label'] = torch.from_numpy(np.array(batch['label']))
+            batch["route_choice_travel_progress"][i, :L] = torch.as_tensor(
+                item["route_choice_travel_progress"], dtype=torch.float32
+            )
+            batch["route_choice_angle"][i, :L, :A] = torch.as_tensor(
+                item["route_choice_angle"], dtype=torch.float32
+            )
+            batch["route_choice_trans_prob"][i, :L, :A] = torch.as_tensor(
+                item["route_choice_trans_prob"], dtype=torch.float32
+            )
+
+            batch["route_choice_selected_mask"][i, :L, :A] = torch.as_tensor(
+                item["route_choice_selected_mask"], dtype=torch.bool
+            )
+            batch["route_choice_unselected_mask"][i, :L, :A] = torch.as_tensor(
+                item["route_choice_unselected_mask"], dtype=torch.bool
+            )
+
+            batch["weekday"][i, :L] = torch.as_tensor(item["weekday"], dtype=torch.int64)
+            batch["time_of_day"][i, :L] = torch.as_tensor(item["time_of_day"], dtype=torch.int64)
+
+            batch["label"][i] = int(item["label"])
 
         return batch
 

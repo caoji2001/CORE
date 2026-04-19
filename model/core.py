@@ -174,6 +174,72 @@ class RouteChoiceModel(nn.Module):
 
         self.selected_and_unselected_fusion_mlp = SwiGLU(input_dim=config.embed_dim*2, hidden_dim=config.embed_dim*4, output_dim=config.embed_dim)
 
+    def _run_sparse_moe_on_valid_adj(self, adj_choice_feat, valid_adj_mask, topk_idx, topk_weight):
+        B, T1, T2, C = adj_choice_feat.shape
+        dtype = adj_choice_feat.dtype
+        device = adj_choice_feat.device
+        out_dim = self.embed_dim * 2
+
+        valid_feat = adj_choice_feat[valid_adj_mask]
+        n_valid = valid_feat.size(0)
+
+        valid_counts = valid_adj_mask.sum(dim=-1).reshape(-1)
+
+        parent_idx = torch.repeat_interleave(
+            torch.arange(B * T1, device=device),
+            valid_counts
+        )
+
+        topk_idx_flat = topk_idx.reshape(B * T1, self.moe_top_k)
+        topk_weight_flat = topk_weight.reshape(B * T1, self.moe_top_k)
+
+        valid_topk_idx = topk_idx_flat.index_select(0, parent_idx)
+        valid_topk_weight = topk_weight_flat.index_select(0, parent_idx)
+        
+        moe_in = valid_feat.repeat_interleave(self.moe_top_k, dim=0)
+        flat_expert_idx = valid_topk_idx.reshape(-1)
+
+        order = flat_expert_idx.argsort()
+        sorted_expert_idx = flat_expert_idx.index_select(0, order)
+        sorted_moe_in = moe_in.index_select(0, order)
+
+        tokens_per_expert = torch.bincount(
+            sorted_expert_idx,
+            minlength=self.moe_n_routed_experts
+        )
+
+        sorted_outputs = torch.empty(
+            (sorted_moe_in.size(0), out_dim),
+            dtype=dtype,
+            device=device,
+        )
+
+        counts = tokens_per_expert.cpu().tolist()
+
+        offset = 0
+        for expert, count in zip(self.routed_experts, counts):
+            if count > 0:
+                sorted_outputs[offset: offset + count] = expert(
+                    sorted_moe_in[offset: offset + count]
+                )
+                offset += count
+
+        routed_out = torch.empty_like(sorted_outputs)
+        routed_out.index_copy_(0, order, sorted_outputs)
+
+        routed_out = (
+            routed_out.view(n_valid, self.moe_top_k, out_dim) *
+            valid_topk_weight.unsqueeze(-1)
+        ).sum(dim=1)
+
+        shared_out = self.shared_experts(valid_feat)
+        valid_y = routed_out + shared_out
+
+        y = adj_choice_feat.new_zeros(B, T1, T2, out_dim)
+        y[valid_adj_mask] = valid_y
+
+        return y
+
     def forward(self, traj_feat, traj_len, adj_feat, route_choice_travel_progress, route_choice_angle, route_choice_trans_prob, route_choice_selected_mask, route_choice_unselected_mask):
         B, T1, T2, C = adj_feat.size()
         assert traj_feat.size() == (B, T1, C)
@@ -191,42 +257,20 @@ class RouteChoiceModel(nn.Module):
         mask = (torch.arange(T1, dtype=torch.int64, device=traj_len.device).unsqueeze(0) < traj_len.unsqueeze(1))
 
         topk_idx, topk_weight, maxvio = self.moe_gate(current_intersection_feat, mask)
-        topk_idx = topk_idx.unsqueeze(1).expand(-1, T2, -1).contiguous().view(B*T1*T2, self.moe_top_k)
-        topk_weight = topk_weight.unsqueeze(1).expand(-1, T2, -1).contiguous().view(B*T1*T2, self.moe_top_k)
 
-        identity = adj_choice_feat
+        valid_adj_mask = route_choice_selected_mask | route_choice_unselected_mask
+        traj_mask = (
+            torch.arange(T1, dtype=torch.int64, device=traj_len.device).unsqueeze(0)
+            < traj_len.unsqueeze(1)
+        )
+        valid_adj_mask = valid_adj_mask & traj_mask.unsqueeze(-1)
 
-        adj_choice_feat = adj_choice_feat.view(B*T1*T2, -1)
-        adj_choice_feat = adj_choice_feat.repeat_interleave(self.moe_top_k, dim=0)
-        flat_topk_idx = topk_idx.view(-1)
-
-        sorted_flat_topk_idx = torch.argsort(flat_topk_idx)
-        sorted_adj_choice_feat = adj_choice_feat[sorted_flat_topk_idx]
-
-        tokens_per_expert = torch.bincount(flat_topk_idx, minlength=self.moe_n_routed_experts)
-        expert_offsets = torch.cumsum(tokens_per_expert, dim=0) - tokens_per_expert
-
-        sorted_outputs = torch.empty((B*T1*T2*self.moe_top_k, C*2), dtype=adj_choice_feat.dtype, device=adj_choice_feat.device)
-        for i, expert in enumerate(self.routed_experts):
-            count = tokens_per_expert[i].item()
-            if count == 0:
-                continue
-
-            start = expert_offsets[i]
-            end = start + count
-
-            expert_input = sorted_adj_choice_feat[start:end]
-            expert_output = expert(expert_input)
-
-            sorted_outputs[start:end] = expert_output
-
-        y = torch.empty_like(sorted_outputs)
-        y[sorted_flat_topk_idx] = sorted_outputs
-
-        y = (y.view(*topk_weight.shape, -1) * topk_weight.unsqueeze(-1)).sum(dim=1)
-        y = y.view(B, T1, T2, -1)
-
-        y = y + self.shared_experts(identity)
+        y = self._run_sparse_moe_on_valid_adj(
+            adj_choice_feat=adj_choice_feat,
+            valid_adj_mask=valid_adj_mask,
+            topk_idx=topk_idx,
+            topk_weight=topk_weight,
+        )
 
         q = self.q_proj(current_intersection_feat).unsqueeze(2)
         k, v = y.split(self.embed_dim, dim=-1)
