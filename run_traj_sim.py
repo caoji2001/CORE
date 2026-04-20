@@ -312,6 +312,7 @@ if __name__ == '__main__':
     parser.add_argument('--cuda', type=int, default=0)
     parser.add_argument('--batch_size', type=int, default=64)
     parser.add_argument('--hidden_dim', type=int, default=128)
+    parser.add_argument('--n_transformer_layers', type=int, default=6)
 
     parser.add_argument('--pretrain_epoch', type=int, default=50)
     parser.add_argument('--road_poi_top_ratio', type=float, default=0.2)
@@ -506,7 +507,7 @@ if __name__ == '__main__':
         },
 
         'bert_config': {
-            'n_layer': 6,
+            'n_layer': args.n_transformer_layers,
             'max_len': 500,
             'embed_dim': args.hidden_dim,
             'n_head': 4,
