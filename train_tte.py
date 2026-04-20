@@ -467,16 +467,14 @@ if __name__ == '__main__':
 
     grid_poi_hidden_states = torch.load(f'./llm_cache/{args.dataset}/{args.grid_poi_emb_file}', weights_only=False)
 
-    llm_dim = 128
-
-    road_poi_hidden_states_list = road_poi_hidden_states[:, :llm_dim]
+    road_poi_hidden_states_list = road_poi_hidden_states[:, :args.hidden_dim]
     road_poi_hidden_states_list = (road_poi_hidden_states_list - road_poi_hidden_states_list.mean(dim=-1, keepdim=True)) / (road_poi_hidden_states_list.std(dim=-1, keepdim=True) + 1e-5)
 
-    grid_poi_hidden_states_list = torch.zeros((len(grid_poi_hidden_states), len(poi_cat_list), llm_dim), dtype=torch.float32)
+    grid_poi_hidden_states_list = torch.zeros((len(grid_poi_hidden_states), len(poi_cat_list), args.hidden_dim), dtype=torch.float32)
     grid_poi_hidden_states_mask = torch.zeros((len(grid_poi_hidden_states), len(poi_cat_list)), dtype=torch.bool)
     for i, d in enumerate(grid_poi_hidden_states):
         for k, v in d.items():
-            grid_poi_hidden_states_list[i, poi_cat2idx[k]] = v[:llm_dim]
+            grid_poi_hidden_states_list[i, poi_cat2idx[k]] = v[:args.hidden_dim]
             grid_poi_hidden_states_mask[i, poi_cat2idx[k]] = True
     grid_poi_hidden_states_list = (grid_poi_hidden_states_list - grid_poi_hidden_states_list.mean(dim=-1, keepdim=True)) / (grid_poi_hidden_states_list.std(dim=-1, keepdim=True) + 1e-5)
 
