@@ -325,7 +325,6 @@ if __name__ == '__main__':
     set_seed(args.seed)
 
     geo = pd.read_csv(f'./data/{args.dataset}/traj/roadmap.geo')
-    rel = pd.read_csv(f'./data/{args.dataset}/traj/roadmap.rel')
     detoured_traj = pd.read_csv(f'./data/{args.dataset}/out/detoured_traj.csv')
     not_detoured_traj = pd.read_csv(f'./data/{args.dataset}/out/not_detoured_traj.csv')
     other_traj = pd.read_csv(f'./data/{args.dataset}/out/other_traj.csv')
@@ -414,7 +413,7 @@ if __name__ == '__main__':
         batch_size=args.batch_size,
         shuffle=False,
         collate_fn=MyCollateFn(road_id_padding_idx, grid_id_padding_idx, weekday_padding_idx, time_of_day_padding_idx),
-        num_workers=8,
+        num_workers=4,
         pin_memory=True,
     )
 
@@ -424,7 +423,7 @@ if __name__ == '__main__':
         batch_size=args.batch_size,
         shuffle=False,
         collate_fn=MyCollateFn(road_id_padding_idx, grid_id_padding_idx, weekday_padding_idx, time_of_day_padding_idx),
-        num_workers=8,
+        num_workers=4,
         pin_memory=True,
     )
 
@@ -434,7 +433,7 @@ if __name__ == '__main__':
         batch_size=args.batch_size,
         shuffle=False,
         collate_fn=MyCollateFn(road_id_padding_idx, grid_id_padding_idx, weekday_padding_idx, time_of_day_padding_idx),
-        num_workers=8,
+        num_workers=4,
         pin_memory=True,
     )
 

@@ -387,7 +387,6 @@ if __name__ == '__main__':
     set_seed(args.seed)
 
     geo = pd.read_csv(f'./data/{args.dataset}/traj/roadmap.geo')
-    rel = pd.read_csv(f'./data/{args.dataset}/traj/roadmap.rel')
     traj_cl_1 = pd.read_csv(f'./data/{args.dataset}/out/trajectory_trim.csv')
     traj_cl_2 = pd.read_csv(f'./data/{args.dataset}/out/trajectory_shift.csv')
     poi = pd.read_csv(f'./data/{args.dataset}/poi/poi.csv')
@@ -466,7 +465,7 @@ if __name__ == '__main__':
         batch_size=args.batch_size,
         shuffle=True,
         collate_fn=MyCollateFn(road_id_padding_idx, grid_id_padding_idx, weekday_padding_idx, time_of_day_padding_idx),
-        num_workers=8,
+        num_workers=4,
         pin_memory=True,
     )
 

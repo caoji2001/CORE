@@ -97,7 +97,6 @@ if __name__ == '__main__':
     set_seed(args.seed)
 
     geo = pd.read_csv(f'./data/{args.dataset}/traj/roadmap.geo')
-    rel = pd.read_csv(f'./data/{args.dataset}/traj/roadmap.rel')
     poi = pd.read_csv(f'./data/{args.dataset}/poi/poi.csv')
 
     if args.dataset == 'Porto':
@@ -154,7 +153,7 @@ if __name__ == '__main__':
         batch_size=args.batch_size,
         shuffle=True,
         collate_fn=MyCollateFn(),
-        num_workers=8,
+        num_workers=4,
         pin_memory=True,
     )
     val_dataloader = DataLoader(
@@ -162,7 +161,7 @@ if __name__ == '__main__':
         batch_size=args.batch_size,
         shuffle=False,
         collate_fn=MyCollateFn(),
-        num_workers=8,
+        num_workers=4,
         pin_memory=True,
     )
     test_dataloader = DataLoader(
@@ -170,7 +169,7 @@ if __name__ == '__main__':
         batch_size=args.batch_size,
         shuffle=False,
         collate_fn=MyCollateFn(),
-        num_workers=8,
+        num_workers=4,
         pin_memory=True,
     )
 

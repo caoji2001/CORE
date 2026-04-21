@@ -306,7 +306,7 @@ class MyCollateFn:
             batch["weekday"][i, :L] = torch.as_tensor(item["weekday"], dtype=torch.int64)
             batch["time_of_day"][i, :L] = torch.as_tensor(item["time_of_day"], dtype=torch.int64)
 
-            batch["label"][i] = int(item["label"])
+            batch["label"][i] = torch.as_tensor(item["label"], dtype=torch.int64)
 
         return batch
 
@@ -341,7 +341,6 @@ if __name__ == '__main__':
     set_seed(args.seed)
 
     geo = pd.read_csv(f'./data/{args.dataset}/traj/roadmap.geo')
-    rel = pd.read_csv(f'./data/{args.dataset}/traj/roadmap.rel')
     train_traj = pd.read_csv(f'./data/{args.dataset}/traj/trajectory_train.csv')
     val_traj = pd.read_csv(f'./data/{args.dataset}/traj/trajectory_val.csv')
     test_traj = pd.read_csv(f'./data/{args.dataset}/traj/trajectory_test.csv')
@@ -439,7 +438,7 @@ if __name__ == '__main__':
         batch_size=args.batch_size,
         shuffle=True,
         collate_fn=MyCollateFn(road_id_padding_idx, grid_id_padding_idx, weekday_padding_idx, time_of_day_padding_idx),
-        num_workers=8,
+        num_workers=4,
         pin_memory=True,
     )
 
@@ -449,7 +448,7 @@ if __name__ == '__main__':
         batch_size=args.batch_size,
         shuffle=False,
         collate_fn=MyCollateFn(road_id_padding_idx, grid_id_padding_idx, weekday_padding_idx, time_of_day_padding_idx),
-        num_workers=8,
+        num_workers=4,
         pin_memory=True,
     )
 
@@ -459,7 +458,7 @@ if __name__ == '__main__':
         batch_size=args.batch_size,
         shuffle=False,
         collate_fn=MyCollateFn(road_id_padding_idx, grid_id_padding_idx, weekday_padding_idx, time_of_day_padding_idx),
-        num_workers=8,
+        num_workers=4,
         pin_memory=True,
     )
 
