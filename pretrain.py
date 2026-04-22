@@ -546,7 +546,6 @@ if __name__ == '__main__':
         }
     })
     core = Core(core_config).to(device)
-    core = torch.compile(core)
 
     optimizer = torch.optim.AdamW(core.parameters(), lr=args.lr, betas=eval(args.betas), weight_decay=args.weight_decay)
     scheduler = CosineLRScheduler(optimizer, t_initial=args.epoch, warmup_t=args.lr_warmup_epoch, lr_min=args.lr_min)
