@@ -1,7 +1,9 @@
 ## <div align="center"> Capturing Context-Aware Route Choice Semantics for Trajectory Representation Learning </div>
 
 <div align="center">
-  <a href="https://arxiv.org/abs/2510.14819"><img src="https://img.shields.io/badge/arXiv-2510.14819-b31b1b.svg"></a>
+  <a><img src="https://img.shields.io/badge/Main%20Paper-1?color=58A399"></a> &ensp;
+  <a href="https://arxiv.org/abs/2510.14819"><img src="https://img.shields.io/badge/arXiv-2510.14819-b31b1b.svg"></a> &ensp;
+  <a href="https://caoji2001.github.io/CORE/"><img src="https://img.shields.io/badge/Project-Page-green"></a>
 </div>
 
 ### Overview
@@ -10,7 +12,7 @@ This is the official implementation of paper "Capturing Context-Aware Route Choi
 
 ### Introduction
 
-Trajectory representation learning (TRL) aims to encode raw trajectory data into low-dimensional embeddings for downstream tasks such as travel time estimation, mobility prediction, and trajectory similarity analysis. From a behavioral perspective, a trajectory reflects a sequence of route choices within an urban environment. However, most existing TRL methods ignore this underlying decision-making process and instead treat trajectories as static, passive spatiotemporal sequences, thereby limiting the semantic richness of the learned representations. To bridge this gap, we propose CORE, a TRL framework that integrates context-aware route choice semantics into trajectory embeddings. CORE first incorporates a multi-granular Environment Perception Module, which leverages large language models (LLMs) to distill environmental semantics from point of interest (POI) distributions, thereby constructing a context-enriched road network. Building upon this backbone, CORE employs a Route Choice Encoder with a mixture-of-experts (MoE) architecture, which captures route choice patterns by jointly leveraging the context-enriched road network and navigational factors. Finally, a Transformer encoder aggregates the route-choice-aware representations into a global trajectory embedding. Extensive experiments on 4 real-world datasets across 6 downstream tasks demonstrate that CORE consistently outperforms 12 state-of-the-art TRL methods, achieving an average improvement of 9.79% over the best-performing baseline. The overview of our framework is shown as below:
+Trajectory representation learning (TRL) aims to encode raw trajectory data into low-dimensional embeddings for downstream tasks such as travel time estimation, mobility prediction, and trajectory similarity analysis. From a behavioral perspective, a trajectory reflects a sequence of route choices within an urban environment. However, most existing TRL methods ignore this underlying decision-making process and instead treat trajectories as static, passive spatiotemporal sequences, thereby limiting the semantic richness of the learned representations. To bridge this gap, we propose CORE, a TRL framework that integrates context-aware route choice semantics into trajectory embeddings. CORE first incorporates a multi-granular Environment Perception Module, which leverages large language models (LLMs) to distill environmental semantics from point of interest (POI) distributions, thereby constructing a context-enriched road network. Building upon this backbone, CORE employs a Route Choice Encoder with a mixture-of-experts (MoE) architecture, which captures route choice patterns by jointly leveraging the context-enriched road network and navigational factors. Finally, a Transformer encoder aggregates the route-choice-aware representations into a global trajectory embedding. Extensive experiments on 4 real-world datasets across 6 downstream tasks demonstrate that CORE consistently outperforms 15 state-of-the-art TRL methods, achieving an average improvement of 9.20% over the best-performing baseline. The overview of our framework is shown as below:
 
 ![method](./assets/overview.png)
 
