@@ -1,7 +1,7 @@
 ## <div align="center"> Capturing Context-Aware Route Choice Semantics for Trajectory Representation Learning </div>
 
 <div align="center">
-  <a><img src="https://img.shields.io/badge/Main%20Paper-1?color=58A399"></a> &ensp;
+  <a href="https://ieeexplore.ieee.org/document/11592601"><img src="https://img.shields.io/badge/Main%20Paper-1?color=58A399"></a> &ensp;
   <a href="https://arxiv.org/abs/2510.14819"><img src="https://img.shields.io/badge/arXiv-2510.14819-b31b1b.svg"></a> &ensp;
   <a href="https://caoji2001.github.io/CORE/"><img src="https://img.shields.io/badge/Project-Page-green"></a>
 </div>
