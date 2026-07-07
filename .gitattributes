@@ -1,4 +1,0 @@
-*.geo linguist-language=CSV
-*.rel linguist-language=CSV
-*.csv linguist-language=CSV
-*.csv linguist-detectable=false
